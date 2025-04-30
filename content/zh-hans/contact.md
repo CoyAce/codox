@@ -1,6 +1,6 @@
 ---
 title: Welcome
-featured_image: 'img/dummy.jpeg'
+featured_image: 'img/van.jpeg'
 description: We'd love to hear from you
 type: page
 ---
