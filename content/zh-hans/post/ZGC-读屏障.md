@@ -6,6 +6,9 @@ featured_image: ""
 description: ""
 ---
 
+### 为什么ZGC几乎不需要停顿？
+1. 解决了存活对象转移停顿时间长的问题
+2. 解决了GC Roots扫描时间长的问题
 ### 读屏障解决什么问题
 ![读屏障的作用](/doc/img/zgc/barrier/4.png)
 ### 读屏障触发条件
