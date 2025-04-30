@@ -1,4 +1,5 @@
 #!/bin/bash
+hugo
 scp -r public root@coyace.top:/tmp
 ssh root@coyace.top << EOF
 cd /tmp
