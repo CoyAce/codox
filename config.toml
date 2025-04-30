@@ -1,4 +1,4 @@
-baseURL = 'https://example.org/'
+baseURL = 'https://coyace.top/doc/'
 languageCode = 'zh-hans'
 title = 'Codox'
 theme = ["github.com/theNewDynamic/gohugo-theme-ananke/v2"]
@@ -34,10 +34,6 @@ unsafe = true
   background_color_class = "bg-black" 
   body_classes = "avenir bg-washed-yellow"
   recent_posts_number = 3 
-  commentoEnable = true 
- 
-[services.disqus] 
-  shortname = 'coyace'
 
 [[menu.main]]
 name = "About"
