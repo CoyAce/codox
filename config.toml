@@ -4,7 +4,6 @@ title = 'Codox'
 theme = ["github.com/theNewDynamic/gohugo-theme-ananke/v2"]
 resourceDir = "../resources"
 
-SectionPagesMenu = "main" 
 pagination.pagerSize = 3                  # this is set low for demonstrating with dummy content. Set to a higher number
 googleAnalytics = "" 
 enableRobotsTXT = true 
@@ -21,6 +20,9 @@ hasCJKLanguage = true
   changefreq = "monthly" 
   priority = 0.5 
   filename = "sitemap.xml" 
+
+[markup.goldmark.renderer]
+unsafe = true
  
 [params] 
   text_color = "" 
@@ -36,3 +38,18 @@ hasCJKLanguage = true
  
 [services.disqus] 
   shortname = 'coyace'
+
+[[menu.main]]
+name = "About"
+url = "/about/"
+weight = 1
+
+[[menu.main]]
+name = "文章列表"
+url = "/post/"
+weight = 2
+
+[[menu.main]]
+name="Contact"
+url = "/contact"
+weight = 3

@@ -1,10 +1,9 @@
 ---
 title: "About"
-description: "A few years ago, while visiting or, rather, rummaging about Notre-Dame, the author of this book found, in an obscure nook of one of the towers, the following word, engraved by hand upon the wall: —ANANKE."
-featured_image: '/images/Victor_Hugo-Hunchback.jpg'
-menu:
-  main:
-    weight: 1
+description: "全栈工程师，关注Java、Go、JavaScript相关技术"
+featured_image: 'img/newman-1.jpg'
+type: page
 ---
 
-修改about
+>要尊重能力，要珍视和捍卫自由，特别是：昆虫才讲究技能专一。
+><div style="text-align: right;">埃里克·雷蒙《大教堂与集市》</div>
