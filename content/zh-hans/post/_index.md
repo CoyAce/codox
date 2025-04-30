@@ -2,7 +2,7 @@
 title: "文章列表"
 date: 2025-04-30T10:57:10+08:00
 tags: []
-featured_image: ""
+featured_image: 'img/newman-1.jpeg'
 description: ""
 ---
 Talk is cheap. Show me the code.

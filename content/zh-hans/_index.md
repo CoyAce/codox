@@ -1,9 +1,8 @@
 ---
-title: "Codox: a Hugo Project"
+title: "Codox: Deep Thinking"
 
-description: "The last theme you'll ever need. Maybe."
+description: "追求卓越，保持好奇心"
 theme_version: '2.8.2'
-cascade:
-  featured_image: '/images/gohugo-default-sample-hero-image.jpg'
+featured_image: 'img/newman-1.jpeg'
 ---
-Welcome to my blog with some of my work in progress. I've been working on this book idea. You can read some of the chapters below.
+欢迎技术交流，磨练技艺，为开源运动作出贡献

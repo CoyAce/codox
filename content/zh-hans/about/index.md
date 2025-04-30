@@ -1,7 +1,7 @@
 ---
 title: "About"
 description: "全栈工程师，关注Java、Go、JavaScript相关技术"
-featured_image: 'img/newman-1.jpg'
+featured_image: 'img/newman-1.jpeg'
 type: page
 ---
 
