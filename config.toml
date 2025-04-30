@@ -1,25 +1,21 @@
 baseURL = 'https://example.org/'
-languageCode = 'en-us'
+languageCode = 'zh-hans'
 title = 'Codox'
 theme = ["github.com/theNewDynamic/gohugo-theme-ananke/v2"]
 resourceDir = "../resources"
 
-DefaultContentLanguage = "cn"
 SectionPagesMenu = "main" 
 pagination.pagerSize = 3                  # this is set low for demonstrating with dummy content. Set to a higher number
 googleAnalytics = "" 
 enableRobotsTXT = true 
+defaultContentLanguage = "zh-hans"
+hasCJKLanguage = true
 
 [languages]
-[languages.en]
-title = "Codox"
-weight = 1
-contentDir = "content/en"
-# languageDirection = 'rtl' for Right-To-Left languages
-[languages.cn]
-title = "Codox"
-weight = 2
-contentDir = "content/cn"
+[languages.zh-hans]
+  title = "Codox"
+  contentDir = "content/zh-hans"
+  weight = 1
 
 [sitemap] 
   changefreq = "monthly" 
