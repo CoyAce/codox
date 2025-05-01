@@ -23,7 +23,7 @@ block-beta
   B --"引用"--> obj
   A --"引用"--> obj'
   obj --"转移"--> obj'
-  style obj stroke:#f66，stroke-width:2px，stroke-dasharray: 5 5
+  style obj stroke:#f66,stroke-width:2px,stroke-dasharray: 5 5
 ```
 为了使转移前后的两个对象保持一致，需要满足以下两个要求
 >1. 转移完成前应用线程不能更新旧对象，否则，复制后的新对象未同步更新，更新丢失
