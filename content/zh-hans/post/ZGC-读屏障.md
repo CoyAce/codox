@@ -33,7 +33,8 @@ block-beta
 > 对象引用是指针的指针，保存的是句柄的地址，句柄保存对象真实地址，先访问句柄获取真实地址，再使用真实地址获取对象属性
 > ```mermaid
 > flowchart LR
-> refA & refB---->oop("句柄(oop)")---->obj
+> refA & refB---->oop("句柄(oop)")---->obj & obj'
+> style obj stroke:#f66,stroke-width:2px,stroke-dasharray: 5 5
 > ```
 > 对象转移后将句柄中的值修改为转移后的地址即可  
 >
