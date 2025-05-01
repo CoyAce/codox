@@ -43,7 +43,7 @@ url = "/about/"
 weight = 1
 
 [[menu.main]]
-name = "主题"
+name = "Topics"
 url = "/post/"
 weight = -2
 
