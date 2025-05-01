@@ -6,9 +6,28 @@ featured_image: ""
 description: ""
 ---
 
+### 为什么GC需要STW？
+1. 标记对象的时候可能新增引用或者删除引用
+2. 转移存活对象时，可能有多个引用指向同一个存活对象，需要同时更新对象的引用
+```mermaid
+block-beta
+  columns 13
+  block:stack:13
+    B space A
+  end
+  space:13
+  block:heap:13
+    obj space obj'
+  end
+  A --"X"--> obj
+  B --"引用"--> obj
+  A --"引用"--> obj'
+  obj --"转移"--> obj'
+  style obj stroke:#f66,stroke-width:2px,stroke-dasharray: 5 5
+```
 ### 为什么ZGC几乎不需要停顿？
-1. 解决了存活对象转移停顿时间长的问题
-2. 解决了GC Roots扫描时间长的问题
+1. 解决了存活对象转移长时间停顿的问题
+2. 优化GC Roots扫描时的停顿问题
 ### 读屏障解决什么问题
 ![读屏障的作用](/doc/img/zgc/barrier/4.png)
 ### 读屏障触发条件
