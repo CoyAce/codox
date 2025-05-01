@@ -1,9 +1,15 @@
 .mermaid{
   background-color: #F6FFFE
 }
-nav a.white-90{
+nav a.hover-white, footer a.hover-white{
   color: #777777
 }
-nav a.white-90:focus, nav a.white-90:hover{
+nav a.hover-white:focus,
+nav a.hover-white:hover,
+footer a.hover-white:focus,
+footer a.hover-white:hover{
   color: #555555
+}
+.instapaper_ignoref{
+  display: none
 }
