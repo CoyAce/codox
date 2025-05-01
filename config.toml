@@ -25,6 +25,7 @@ hasCJKLanguage = true
 unsafe = true
  
 [params] 
+  custom_css = ["special.css"]
   text_color = "" 
   author = "" 
   favicon = "img/logo.svg" 
