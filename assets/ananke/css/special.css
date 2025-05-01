@@ -1,3 +1,9 @@
 .mermaid{
   background-color: #F6FFFE
 }
+nav a.white-90{
+  color: #777777
+}
+nav a.white-90:focus, nav a.white-90:hover{
+  color: #555555
+}
