@@ -66,7 +66,7 @@
     {{ block "footer" . }}{{ partialCached "site-footer.html" . }}{{ end }}
     {{ if .Store.Get "hasMermaid" }}
       <script type="module">
-        import mermaid from '/doc/dist/mermaid.esm.mjs';
+        import mermaid from '/doc/module/mermaid/dist/mermaid.esm.mjs';
         mermaid.initialize({ startOnLoad: true });
       </script>
     {{ end }}
