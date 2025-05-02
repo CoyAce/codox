@@ -1,8 +1,11 @@
 #!/bin/bash
 hugo
-scp -r public root@coyace.top:/tmp
+tar -czf public.tar.gz ./public
+scp -r public.tar.gz root@coyace.top:/tmp
+rm -f public.tar.gz
 ssh root@coyace.top << EOF
 cd /tmp
+tar -xzf public.tar.gz
 rm -rf /var/www/html/doc
 mv -f public /var/www/html/doc
 EOF
