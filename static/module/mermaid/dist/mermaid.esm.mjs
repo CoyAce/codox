@@ -1,4 +1,4 @@
-import { bv } from "./mermaid-DiDd0-cy.js";
+import { bv } from "./mermaid-BTN5MP6C.js";
 export {
   bv as default
 };
