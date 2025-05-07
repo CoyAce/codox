@@ -294,3 +294,5 @@ src/hotspot/share/gc/z/zBarrierSetRuntime.cpp
 [2] [ZGC-Joker-2021.pdf](https://cr.openjdk.org/~pliden/slides/ZGC-Joker-2021.pdf)
 
 [3] [How ZGC allocates memory for the Java heap](https://joelsiks.com/posts/zgc-heap-memory-allocation/)
+
+[4] [JEP 439: Generational ZGC](https://openjdk.org/jeps/439)
