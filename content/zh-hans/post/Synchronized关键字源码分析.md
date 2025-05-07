@@ -6,7 +6,7 @@ featured_image: ""
 description: ""
 ---
 
-### Synchronized如何实现锁升级和锁降级？
+### Synchronized如何实现锁升级？
 Synchronized加锁和释放锁对应字节码monitorenter和monitorexit，加锁需要用到lock_object，重点关注该方法，默认使用轻量级锁，需关注lightweight_lock方法，加锁失败会进入InterpreterRuntime::monitorenter进行加锁尝试，失败则进行锁升级。
 <details>
 <summary>字节码monitorenter与monitorexit对应的C++代码</summary>
