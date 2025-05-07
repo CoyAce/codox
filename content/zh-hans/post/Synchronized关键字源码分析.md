@@ -756,4 +756,5 @@ src/hotspot/share/runtime/lightweightSynchronizer.cpp
 942       }
 943     }
 ```
+888行：自旋加monitor锁
 大致流程：如果是轻量级锁，尝试升级成monitor锁，如果是monitor锁，返回monitor对象
