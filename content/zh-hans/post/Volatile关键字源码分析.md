@@ -7,9 +7,22 @@ description: ""
 ---
 
 ### 为了实现Volatile关键字的语义JVM做了哪些事情？
-putfield字节码插入了volatile屏障实现volatile语义
+putfield字节码插入了volatile屏障实现volatile语义，flags字段保存了volatile标记信息
 
-Flags: [0000|00|is_final|is_volatile]
+```C++
+src/hotspot/share/oops/resolvedFieldEntry.hpp
+46      //class InstanceKlass;
+47      class ResolvedFieldEntry {
+48        friend class VMStructs;
+49      
+50        InstanceKlass* _field_holder; // Field holder klass
+51        int _field_offset;            // Field offset in bytes
+52        u2 _field_index;              // Index into field information in holder InstanceKlass
+53        u2 _cpool_index;              // Constant pool index
+54        u1 _tos_state;                // TOS state
+55        u1 _flags;                    // Flags: [0000|00|is_final|is_volatile]
+56        u1 _get_code, _put_code;      // Get and Put bytecodes of the field
+```
 
 2747-2753行：检测是否是volatile，是则插入volatile_barrier: Assembler::StoreLoad | Assembler::StoreStore
 ```C++
