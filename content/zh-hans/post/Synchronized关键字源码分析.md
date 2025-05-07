@@ -475,7 +475,7 @@ src/hotspot/cpu/x86/macroAssembler_x86.cpp
 ```
 10655-10674的解释：
 1. 如果markWord锁标志位是10（monitor），跳转到slow标签
-2. 如果markWord锁标志位是01（unlocked），修改为00（locked），将对象头加入lock_stack，如果修改失败，跳转到slow标签
+2. 如果markWord锁标志位是01（unlocked），修改为00（locked），将对象头压入lock_stack，如果修改失败，跳转到slow标签。使用lock_stack可以支持重入，每次重入会将对象头压入lock_stack。
 
 slow_case执行以下代码：
 ```C++
