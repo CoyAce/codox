@@ -31,7 +31,7 @@ block-beta
 >2. 转移完成后需要更新所有引用旧对象的指针，将其指向新对象，引用全部更新后对象才可用
 
 问题：怎么实现同时修改所有引用某个对象的指针，不遗漏?  
-需要转移的对象会创建ZForwarding，插入_forwarding_table，能查到ZForwarding的地址才需要更新。
+>需要转移的对象会创建ZForwarding，插入_forwarding_table，能查到ZForwarding的地址才需要更新。
 有ZForwarding则使用新地址，否则使用旧地址
 > ```C++
 > src/hotspot/share/gc/z/zGeneration.inline.hpp
@@ -47,22 +47,6 @@ block-beta
 > 140 }
 > ```
 
-> ```C++
-> src/hotspot/cpu/x86/gc/z/zBarrierSetAssembler_x86.cpp
-> #define __ masm->
-> 218  void ZBarrierSetAssembler::load_at(MacroAssembler* masm,
->                            DecoratorSet decorators,
->                            BasicType type,
->                            Register dst,
->                            Address src,
->                            Register tmp1) {
-> ...
-> 248  // Load address
-> 249  __ lea(scratch, src);
-> 250
-> 251  // Load oop at address
-> 252  __ movptr(dst, Address(scratch, 0));
-> ```
 
 ### 为什么ZGC几乎不需要停顿？
 1. 解决了存活对象转移长时间停顿的问题
@@ -126,6 +110,7 @@ src/hotspot/cpu/x86/macroAssembler_x86.cpp
 6017      if (as_raw) {
 6018        bs->BarrierSetAssembler::load_at(this, decorators, type, dst, src, tmp1);
 6019      } else {
+            // 跳转至zBarrierSetAssembler_x86.cpp 218行
 6020        bs->load_at(this, decorators, type, dst, src, tmp1);
 6021      }
 6022    }
@@ -135,9 +120,11 @@ src/hotspot/cpu/x86/macroAssembler_x86.cpp
 6037      access_load_at(T_OBJECT, IN_HEAP | decorators, dst, src, tmp1);
 6038    }
 ```
+
 读屏障实现代码：
 ```C++
 src/hotspot/cpu/x86/gc/z/zBarrierSetAssembler_x86.cpp
+#define __ masm->
 218     void ZBarrierSetAssembler::load_at(MacroAssembler* masm,
 219                                        DecoratorSet decorators,
 220                                        BasicType type,
@@ -229,6 +216,42 @@ src/hotspot/cpu/x86/gc/z/zBarrierSetAssembler_x86.cpp
 ![读屏障快路径](/doc/img/zgc/barrier/5.png)
 慢路径实现代码：
 ```C++
+src/hotspot/share/gc/z/zBarrierSetRuntime.cpp
+29      JRT_LEAF(oopDesc*, ZBarrierSetRuntime::load_barrier_on_oop_field_preloaded(oopDesc* o, oop* p))
+          // 跳转至zBarrier.inline.hpp 465行
+30        return to_oop(ZBarrier::load_barrier_on_oop_field_preloaded((zpointer*)p, to_zpointer(o)));
+31      JRT_END
+...
+77      address ZBarrierSetRuntime::load_barrier_on_oop_field_preloaded_addr(DecoratorSet decorators) {
+78        if (decorators & AS_NO_KEEPALIVE) {
+79          if (decorators & ON_PHANTOM_OOP_REF) {
+80            return no_keepalive_load_barrier_on_phantom_oop_field_preloaded_addr();
+81          } else if (decorators & ON_WEAK_OOP_REF) {
+82            return no_keepalive_load_barrier_on_weak_oop_field_preloaded_addr();
+83          } else {
+84            assert((decorators & ON_STRONG_OOP_REF), "Expected type");
+85            // Normal loads on strong oop never keep objects alive
+86            return load_barrier_on_oop_field_preloaded_addr();
+87          }
+88        } else {
+89          if (decorators & ON_PHANTOM_OOP_REF) {
+90            return load_barrier_on_phantom_oop_field_preloaded_addr();
+91          } else if (decorators & ON_WEAK_OOP_REF) {
+92            return load_barrier_on_weak_oop_field_preloaded_addr();
+93          } else {
+94            assert((decorators & ON_STRONG_OOP_REF), "Expected type");
+              // AS_NORMAL执行入口，跳转至100行
+95            return load_barrier_on_oop_field_preloaded_addr();
+96          }
+97        }
+98      }
+99
+100      address ZBarrierSetRuntime::load_barrier_on_oop_field_preloaded_addr() {
+           // 跳转至29行
+101        return reinterpret_cast<address>(load_barrier_on_oop_field_preloaded);
+102      }
+```
+```C++
 src/hotspot/share/gc/z/zBarrier.inline.hpp
 322     template <typename ZBarrierSlowPath>
 323     inline zaddress ZBarrier::barrier(ZBarrierFastPath fast_path, ZBarrierSlowPath slow_path, ZBarrierColor color, volatile zpointer* p, zpointer o, bool allow_null) {
@@ -266,42 +289,6 @@ src/hotspot/share/gc/z/zBarrier.inline.hpp
           // 跳转至323行
 470       return barrier(is_load_good_or_null_fast_path, slow_path, color_load_good, p, o);
 471     }
-```
-```C++
-src/hotspot/share/gc/z/zBarrierSetRuntime.cpp
-29      JRT_LEAF(oopDesc*, ZBarrierSetRuntime::load_barrier_on_oop_field_preloaded(oopDesc* o, oop* p))
-          // 跳转至zBarrier.inline.hpp 465行
-30        return to_oop(ZBarrier::load_barrier_on_oop_field_preloaded((zpointer*)p, to_zpointer(o)));
-31      JRT_END
-...
-77      address ZBarrierSetRuntime::load_barrier_on_oop_field_preloaded_addr(DecoratorSet decorators) {
-78        if (decorators & AS_NO_KEEPALIVE) {
-79          if (decorators & ON_PHANTOM_OOP_REF) {
-80            return no_keepalive_load_barrier_on_phantom_oop_field_preloaded_addr();
-81          } else if (decorators & ON_WEAK_OOP_REF) {
-82            return no_keepalive_load_barrier_on_weak_oop_field_preloaded_addr();
-83          } else {
-84            assert((decorators & ON_STRONG_OOP_REF), "Expected type");
-85            // Normal loads on strong oop never keep objects alive
-86            return load_barrier_on_oop_field_preloaded_addr();
-87          }
-88        } else {
-89          if (decorators & ON_PHANTOM_OOP_REF) {
-90            return load_barrier_on_phantom_oop_field_preloaded_addr();
-91          } else if (decorators & ON_WEAK_OOP_REF) {
-92            return load_barrier_on_weak_oop_field_preloaded_addr();
-93          } else {
-94            assert((decorators & ON_STRONG_OOP_REF), "Expected type");
-              // AS_NORMAL执行入口，跳转至100行
-95            return load_barrier_on_oop_field_preloaded_addr();
-96          }
-97        }
-98      }
-99
-100      address ZBarrierSetRuntime::load_barrier_on_oop_field_preloaded_addr() {
-           // 跳转至29行
-101        return reinterpret_cast<address>(load_barrier_on_oop_field_preloaded);
-102      }
 ```
 
 ### 参考资料
