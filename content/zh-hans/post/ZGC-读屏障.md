@@ -31,13 +31,22 @@ block-beta
 >2. 转移完成后需要更新所有引用旧对象的指针，将其指向新对象，引用全部更新后对象才可用
 
 问题：怎么实现同时修改所有引用某个对象的指针，不遗漏?  
-> 对象引用是指针的指针，保存的是句柄的地址，句柄保存对象真实地址，先访问句柄获取真实地址，再使用真实地址获取对象属性
-> ```mermaid
-> flowchart LR
-> refA & refB---->oop("句柄(oop)")---->obj & obj'
-> style obj stroke:#f66,stroke-width:2px,stroke-dasharray: 5 5
+需要转移的对象会创建ZForwarding，插入_forwarding_table，能查到ZForwarding的地址才需要更新。
+有ZForwarding则使用新地址，否则使用旧地址
+> ```C++
+> src/hotspot/share/gc/z/zGeneration.inline.hpp
+> 131 inline zaddress ZGeneration::relocate_or_remap_object(zaddress_unsafe addr) {
+> 132   ZForwarding* const forwarding = _forwarding_table.get(addr);
+> 133   if (forwarding == nullptr) {
+> 134     // Not forwarding
+> 135     return safe(addr);
+> 136   }
+> 137 
+> 138   // Relocate object
+> 139   return _relocate.relocate_object(forwarding, addr);
+> 140 }
 > ```
-> 对象转移后将句柄中的值修改为转移后的地址即可  
+
 > ```C++
 > src/hotspot/cpu/x86/gc/z/zBarrierSetAssembler_x86.cpp
 > #define __ masm->
@@ -57,20 +66,24 @@ block-beta
 
 ### 为什么ZGC几乎不需要停顿？
 1. 解决了存活对象转移长时间停顿的问题
-  - GC线程标记对象是否存活，转移存活对象，修改对象句柄中的状态位，更新转发表
+  - GC线程标记对象是否存活，转移存活对象，修改对象指针中的状态位，更新转发表
   - 转发表保存转移前的对象与转移后的对象之间的地址映射关系
-  - 读屏障：应用线程在获取引用类型的字段时对句柄中的真实地址进行检测和更新
-  - 根据真实地址中的状态位判断字段是否需要转移
+  - 读屏障：应用线程在获取引用类型的字段时对指针中的地址进行检测和更新
+  - 根据地址中的状态位判断字段是否需要转移
 > 核心思想是使应用线程与GC线程可以并行转移对象
 
 > 传统GC需要STW来实现GC前后对象一致，ZGC应用线程与GC线程可以并发转移，不需要STW
+
 2. 优化GC Roots扫描时的停顿问题  
 [JEP 376: ZGC: Concurrent Thread-Stack Processing](https://openjdk.org/jeps/376)
+
 ### 读屏障解决什么问题
-用于检测句柄是否需要更新
+>1. 检测是否有加载指向转移集(relocation set)的对象指针的行为
+>2. 支持Java应用线程帮助GC线程转移对象
+
 ![读屏障的作用](/doc/img/zgc/barrier/4.png)
 ### 读屏障触发条件
-从堆中加载对象句柄时触发，在getfield字节码中实现
+从堆中加载对象指针时触发，在getfield字节码中实现
 ```C++
 src/hotspot/cpu/x86/templateTable_x86.cpp
 150     static void do_oop_load(InterpreterMacroAssembler* _masm,
@@ -250,12 +263,14 @@ src/hotspot/share/gc/z/zBarrier.inline.hpp
 467         return addr;
 468       };
 469     
+          // 跳转至323行
 470       return barrier(is_load_good_or_null_fast_path, slow_path, color_load_good, p, o);
 471     }
 ```
 ```C++
 src/hotspot/share/gc/z/zBarrierSetRuntime.cpp
 29      JRT_LEAF(oopDesc*, ZBarrierSetRuntime::load_barrier_on_oop_field_preloaded(oopDesc* o, oop* p))
+          // 跳转至zBarrier.inline.hpp 465行
 30        return to_oop(ZBarrier::load_barrier_on_oop_field_preloaded((zpointer*)p, to_zpointer(o)));
 31      JRT_END
 ...
@@ -277,13 +292,14 @@ src/hotspot/share/gc/z/zBarrierSetRuntime.cpp
 92            return load_barrier_on_weak_oop_field_preloaded_addr();
 93          } else {
 94            assert((decorators & ON_STRONG_OOP_REF), "Expected type");
-              // AS_NORMAL执行入口
+              // AS_NORMAL执行入口，跳转至100行
 95            return load_barrier_on_oop_field_preloaded_addr();
 96          }
 97        }
 98      }
 99
 100      address ZBarrierSetRuntime::load_barrier_on_oop_field_preloaded_addr() {
+           // 跳转至29行
 101        return reinterpret_cast<address>(load_barrier_on_oop_field_preloaded);
 102      }
 ```
